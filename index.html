@@ -85,7 +85,7 @@
   .page img {
     max-width: calc(100vw - 80px);
     max-height: 400px;
-    border-radius: 0; /* Sıfır, çünkü çerçeve istemiyoruz */
+    border-radius: 0;
     object-fit: contain;
     user-select: none;
   }
@@ -106,27 +106,24 @@
     transform: translate(calc(-150% - 50px), -50%) rotateY(90deg);
   }
 
-  /* Ok butonları fotoğrafın içinde yanlarda */
+  /* Ok butonları fotoğrafın içinde yanlarda - sade ve küçük */
   .nav-button {
     position: absolute;
     top: 50%;
-    font-size: 3rem;
-    color: rgba(255,255,255,0.8);
-    text-shadow: 0 0 5px rgba(0,0,0,0.7);
-    background: rgba(0,0,0,0.25);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    text-align: center;
+    font-size: 2rem;
+    color: rgba(0,0,0,0.6);
     cursor: pointer;
     user-select: none;
     transform: translateY(-50%);
-    transition: background-color 0.3s ease;
     z-index: 10;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s ease;
   }
   .nav-button:hover {
-    background-color: rgba(0,0,0,0.5);
+    color: rgba(0,0,0,0.9);
   }
   .nav-prev {
     left: 10px;
@@ -148,8 +145,8 @@
 
 <div class="gallery-container" aria-label="Fotoğraf galerisi">
   <!-- Sayfalar JS ile buraya eklenecek -->
-  <div class="nav-button nav-prev" tabindex="0" role="button" aria-label="Önceki sayfa">&#10094;</div>
-  <div class="nav-button nav-next" tabindex="0" role="button" aria-label="Sonraki sayfa">&#10095;</div>
+  <button class="nav-button nav-prev" tabindex="0" aria-label="Önceki sayfa">‹</button>
+  <button class="nav-button nav-next" tabindex="0" aria-label="Sonraki sayfa">›</button>
 </div>
 
 <audio id="revealSound" src="reveal.mp3" preload="auto"></audio>
@@ -168,10 +165,7 @@
     "foto3.jpg",
     "foto4.jpg",
     "foto5.jpg",
-    "foto6.jpg",
-    "foto7.jpg",
-    "foto8.jpg",
-    "foto9.jpg"
+    "foto6.jpg"
   ];
 
   let currentIndex = 0;
