@@ -3,142 +3,104 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mektup</title>
+<title>Mektup ve Galeri</title>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-
-    body {
-        margin: 0;
-        font-family: 'Montserrat', sans-serif;
-        background: linear-gradient(135deg, #ece9e6, #ffffff);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        flex-direction: column;
-        padding: 20px;
-    }
-    .countdown {
-        font-size: 3em;
-        background: rgba(255,255,255,0.85);
-        padding: 20px 40px;
-        border-radius: 20px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        text-align: center;
-        margin-bottom: 40px;
-        font-weight: bold;
-        letter-spacing: 2px;
-        user-select: none;
-    }
-    .envelope {
-        width: 220px;
-        height: 150px;
-        position: relative;
-        cursor: pointer;
-        perspective: 1000px;
-        opacity: 0;
-        transform: scale(0.9);
-        transition: opacity 1s ease, transform 0.8s ease;
-        user-select: none;
-    }
-    .envelope.show {
-        opacity: 1;
-        transform: scale(1);
-    }
-    .envelope-body {
-        width: 100%;
-        height: 100%;
-        background: #e8e8e8;
-        border-radius: 0 0 10px 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        position: relative;
-    }
-    .envelope-flap {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 220px;
-        height: 80px;
-        background: #f0f0f0;
-        clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
-        transform-origin: top center;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        transition: transform 1s ease;
-        z-index: 2;
-    }
-    .envelope.open .envelope-flap {
-        transform: rotateX(-180deg);
-    }
-    .gallery {
-        display: none;
-        position: relative;
-        width: 90%;
-        max-width: 800px;
-        height: 80%;
-        overflow: hidden;
-        user-select: none;
-    }
-    .gallery img {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        max-height: 100%;
-        max-width: calc(100% - 20px);
-        transform: translate(-50%, -50%) rotateY(90deg);
-        border-radius: 15px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-        opacity: 0;
-        object-fit: contain;
-        transition: transform 0.6s ease, opacity 0.6s ease;
-        will-change: transform, opacity;
-        user-select: none;
-        pointer-events: none;
-    }
-    .gallery img.active {
-        opacity: 1;
-        transform: translate(-50%, -50%) rotateY(0deg);
-        z-index: 1;
-        pointer-events: auto;
-    }
-    .gallery .nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 2.5em;
-        background: rgba(255,255,255,0.7);
-        border-radius: 50%;
-        padding: 10px;
-        cursor: pointer;
-        user-select: none;
-        transition: background 0.3s ease;
-        z-index: 10;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .gallery .nav:hover {
-        background: rgba(255,255,255,0.9);
-    }
-    .gallery .prev {
-        left: 10px;
-    }
-    .gallery .next {
-        right: 10px;
-    }
+  body {
+    margin: 0; font-family: Arial, sans-serif;
+    background: #f0f0f0; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; padding: 20px;
+  }
+  .countdown {
+    font-size: 3em; background: white;
+    padding: 20px 40px; border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 30px; user-select: none;
+  }
+  .envelope {
+    width: 220px; height: 150px;
+    background: #e8e8e8;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    cursor: pointer;
+    position: relative;
+    perspective: 800px;
+    user-select: none;
+    display: none;
+  }
+  .envelope-flap {
+    position: absolute;
+    top: 0; left: 0;
+    width: 220px; height: 80px;
+    background: #f0f0f0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 1s ease;
+    z-index: 2;
+  }
+  .envelope.open .envelope-flap {
+    transform: rotateX(-180deg);
+  }
+  .gallery {
+    margin-top: 30px;
+    width: 80vw;
+    max-width: 600px;
+    height: 350px;
+    position: relative;
+    display: none;
+    overflow: hidden;
+  }
+  .gallery img {
+    width: calc(100% - 20px);
+    height: 100%;
+    object-fit: contain;
+    position: absolute;
+    top: 0; left: 0;
+    transition: opacity 0.6s ease;
+    opacity: 0;
+  }
+  .gallery img.active {
+    opacity: 1;
+    position: relative;
+  }
+  .nav {
+    position: absolute;
+    top: 50%;
+    font-size: 2rem;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transform: translateY(-50%);
+    user-select: none;
+  }
+  .nav.prev {
+    left: 10px;
+  }
+  .nav.next {
+    right: 10px;
+  }
 </style>
 </head>
 <body>
 
 <div id="countdown" class="countdown"></div>
 
-<div id="envelope" class="envelope" aria-label="Mektup zarfı" role="button" tabindex="0">
+<div id="envelope" class="envelope" tabindex="0" role="button" aria-label="Mektup zarfı">
   <div class="envelope-flap"></div>
   <div class="envelope-body"></div>
 </div>
 
-<div id="gallery" class="gallery" aria-label="Fotoğraf galerisi" style="display:none;">
-  <!-- galerinin içeriği önceki gibi -->
+<div id="gallery" class="gallery" aria-label="Fotoğraf galerisi">
+  <div class="nav prev" aria-label="Önceki sayfa">&#10094;</div>
+  <div class="nav next" aria-label="Sonraki sayfa">&#10095;</div>
+  <img src="foto1.jpg" alt="Fotoğraf 1" class="active" />
+  <img src="foto2.jpg" alt="Fotoğraf 2" />
+  <img src="foto3.jpg" alt="Fotoğraf 3" />
 </div>
 
 <audio id="openSound" src="open.mp3" preload="auto"></audio>
@@ -147,7 +109,7 @@
 
 <script>
   const targetDate = new Date();
-  targetDate.setHours(00, 17, 0, 0);
+  targetDate.setHours(00,20,0,0);
 
   const countdownEl = document.getElementById("countdown");
   const envelopeEl = document.getElementById("envelope");
@@ -157,11 +119,43 @@
   const revealSound = document.getElementById("revealSound");
   const tickTockSound = document.getElementById("tickTockSound");
 
+  const images = [...galleryEl.querySelectorAll("img")];
+  const prevBtn = galleryEl.querySelector(".nav.prev");
+  const nextBtn = galleryEl.querySelector(".nav.next");
+
+  let currentIndex = 0;
   let tickTockInterval = null;
   let revealPlayed = false;
 
+  function showImage(index) {
+    images.forEach((img, i) => img.classList.toggle("active", i === index));
+    currentIndex = index;
+    openSound.currentTime = 0;
+    openSound.play().catch(() => {});
+  }
+
+  prevBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    showImage((currentIndex - 1 + images.length) % images.length);
+  });
+
+  nextBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    showImage((currentIndex + 1) % images.length);
+  });
+
+  galleryEl.addEventListener("click", e => {
+    if(e.target === prevBtn || e.target === nextBtn) return;
+    const clickX = e.clientX;
+    if(clickX < window.innerWidth / 2) {
+      prevBtn.click();
+    } else {
+      nextBtn.click();
+    }
+  });
+
   function startTickTock() {
-    if (tickTockInterval) return; // Zaten çalışıyorsa geç
+    if(tickTockInterval) return;
     tickTockInterval = setInterval(() => {
       tickTockSound.currentTime = 0;
       tickTockSound.play().catch(() => {});
@@ -169,14 +163,14 @@
   }
 
   function stopTickTock() {
-    if (tickTockInterval) {
+    if(tickTockInterval) {
       clearInterval(tickTockInterval);
       tickTockInterval = null;
     }
   }
 
   function playReveal() {
-    if (!revealPlayed) {
+    if(!revealPlayed) {
       revealPlayed = true;
       revealSound.currentTime = 0;
       revealSound.play().catch(() => {});
@@ -191,61 +185,54 @@
     playReveal();
   }
 
-  // Geri sayım kontrol ve gösterim
   function updateCountdown() {
     const now = Date.now();
     const diff = targetDate.getTime() - now;
 
-    if (diff <= 0) {
+    if(diff <= 0) {
       showEnvelopeAndReveal();
-      return false; // süre bitti
+      return false;
     } else {
-      // Geri sayımı göster
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const days = Math.floor(diff / (1000*60*60*24));
+      const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+      const minutes = Math.floor((diff % (1000*60*60)) / (1000*60));
+      const seconds = Math.floor((diff % (1000*60)) / 1000);
 
-      countdownEl.textContent =
+      countdownEl.textContent = 
         `${String(days).padStart(2,'0')}:${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-      return true; // süre devam ediyor
+      return true;
     }
   }
 
-  // İlk yüklemede kontrol
   window.addEventListener('load', () => {
     const countdownActive = updateCountdown();
 
-    if (countdownActive) {
-      // Geri sayım devam ediyor, 2 saniye sonra tick-tock başlat
+    if(countdownActive) {
       countdownEl.style.display = "block";
       envelopeEl.style.display = "none";
-      setTimeout(startTickTock, 2000);
+      setTimeout(() => {
+        startTickTock();
+      }, 2000);
     } else {
-      // Süre zaten bitmiş, mektup ve reveal sesi hemen göster
       showEnvelopeAndReveal();
     }
   });
 
-  // Geri sayım 1 saniyede bir güncelleniyor, süre bitince alarm
   const countdownInterval = setInterval(() => {
     const countdownActive = updateCountdown();
-    if (!countdownActive) {
-      clearInterval(countdownInterval);
-    }
+    if(!countdownActive) clearInterval(countdownInterval);
   }, 1000);
 
-  // Zarf tıklama ile açılır (open.mp3 çalar)
-  envelopeEl.addEventListener('click', () => {
+  envelopeEl.addEventListener("click", () => {
     openSound.currentTime = 0;
-    openSound.play();
+    openSound.play().catch(() => {});
     envelopeEl.classList.add("open");
     setTimeout(() => {
       envelopeEl.style.display = "none";
       galleryEl.style.display = "block";
+      showImage(0);
     }, 1000);
   });
-
 </script>
 
 </body>
