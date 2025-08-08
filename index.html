@@ -7,10 +7,12 @@
 <style>
   body {
     margin: 0; font-family: Arial, sans-serif;
-    background: #f0f0f0; display: flex;
-    flex-direction: column; align-items: center; justify-content: center;
+    background: #f0f0f0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     height: 100vh; padding: 20px;
   }
+
   #startMessage {
     font-size: 2.5em;
     color: #444;
@@ -18,6 +20,7 @@
     opacity: 0;
     animation: fadeIn 1.5s forwards;
     cursor: pointer;
+    margin-bottom: 20px;
   }
   @keyframes fadeIn {
     to {opacity: 1;}
@@ -29,13 +32,13 @@
     border-radius: 0 0 15px 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     cursor: pointer;
-    position: relative;
-    perspective: 800px;
+    perspective: 1200px;
     user-select: none;
     opacity: 0;
     transform: scale(0.9);
     transition: opacity 1s ease, transform 0.8s ease;
     display: none;
+    position: relative;
   }
   .envelope.show {
     opacity: 1;
@@ -56,25 +59,84 @@
     transform: rotateX(-180deg);
   }
 
-  .gallery {
-    margin-top: 30px;
+  .gallery-container {
+    position: relative;
     width: 90vw;
     max-width: 700px;
     height: 400px;
-    overflow-x: auto;
-    white-space: nowrap;
-    scroll-behavior: smooth;
+    perspective: 2000px;
     display: none;
   }
-  .gallery img {
+
+  .page {
+    position: absolute;
+    top: 0; left: 50%;
+    width: calc(100% - 40px); /* kenarlardan 20px boşluk */
     height: 100%;
-    width: auto;
-    display: inline-block;
-    margin: 0 10px;
-    border-radius: 10px;
+    max-width: 660px;
+    background: white;
+    border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    overflow: hidden;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    cursor: default;
     user-select: none;
+    transition: transform 0.8s ease, opacity 0.8s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
+
+  .page img {
+    width: 95%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+
+  .page.current {
+    z-index: 3;
+    transform: translateX(-50%) rotateY(0deg);
+    opacity: 1;
+  }
+  .page.next {
+    z-index: 2;
+    transform: translateX(calc(50% + 20px)) rotateY(-90deg);
+    opacity: 0;
+  }
+  .page.prev {
+    z-index: 2;
+    transform: translateX(calc(-150% - 20px)) rotateY(90deg);
+    opacity: 0;
+  }
+
+  .nav-button {
+    position: absolute;
+    top: 50%;
+    font-size: 2.5rem;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transform: translateY(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: background-color 0.3s ease;
+  }
+  .nav-button:hover {
+    background-color: #ddd;
+  }
+  .nav-prev {
+    left: -70px;
+  }
+  .nav-next {
+    right: -70px;
+  }
+
 </style>
 </head>
 <body>
@@ -86,13 +148,10 @@
   <div class="envelope-body"></div>
 </div>
 
-<div id="gallery" class="gallery" aria-label="Fotoğraf galerisi">
-  <img src="foto1.jpg" alt="Fotoğraf 1" />
-  <img src="foto2.jpg" alt="Fotoğraf 2" />
-  <img src="foto3.jpg" alt="Fotoğraf 3" />
-  <img src="foto4.jpg" alt="Fotoğraf 4" />
-  <img src="foto5.jpg" alt="Fotoğraf 5" />
-  <img src="foto6.jpg" alt="Fotoğraf 6" />
+<div class="gallery-container" aria-label="Fotoğraf galerisi">
+  <!-- Sayfalar JS ile buraya eklenecek -->
+  <div class="nav-button nav-prev" tabindex="0" role="button" aria-label="Önceki sayfa">&#10094;</div>
+  <div class="nav-button nav-next" tabindex="0" role="button" aria-label="Sonraki sayfa">&#10095;</div>
 </div>
 
 <audio id="revealSound" src="reveal.mp3" preload="auto"></audio>
@@ -101,10 +160,101 @@
 <script>
   const startMessage = document.getElementById('startMessage');
   const envelope = document.getElementById('envelope');
-  const gallery = document.getElementById('gallery');
+  const galleryContainer = document.querySelector('.gallery-container');
   const revealSound = document.getElementById('revealSound');
   const openSound = document.getElementById('openSound');
 
+  const images = [
+    "foto1.jpg",
+    "foto2.jpg",
+    "foto3.jpg",
+    "foto4.jpg",
+    "foto5.jpg",
+    "foto6.jpg"
+  ];
+
+  let currentIndex = 0;
+  let isAnimating = false;
+
+  function createPage(src, positionClass) {
+    const page = document.createElement('div');
+    page.className = 'page ' + positionClass;
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = "Fotoğraf";
+    page.appendChild(img);
+    return page;
+  }
+
+  function renderPages() {
+    galleryContainer.querySelectorAll('.page').forEach(p => p.remove());
+
+    const prevIndex = (currentIndex - 1 + images.length) % images.length;
+    const nextIndex = (currentIndex + 1) % images.length;
+
+    const prevPage = createPage(images[prevIndex], 'prev');
+    const currentPage = createPage(images[currentIndex], 'current');
+    const nextPage = createPage(images[nextIndex], 'next');
+
+    galleryContainer.appendChild(prevPage);
+    galleryContainer.appendChild(currentPage);
+    galleryContainer.appendChild(nextPage);
+  }
+
+  function goNext() {
+    if(isAnimating) return;
+    isAnimating = true;
+    const pages = galleryContainer.querySelectorAll('.page');
+
+    pages[1].style.transform = 'translateX(calc(50% + 20px)) rotateY(-90deg)';
+    pages[1].style.opacity = '0';
+    pages[2].style.transform = 'translateX(-50%) rotateY(0deg)';
+    pages[2].style.opacity = '1';
+
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % images.length;
+      renderPages();
+      isAnimating = false;
+    }, 800);
+  }
+
+  function goPrev() {
+    if(isAnimating) return;
+    isAnimating = true;
+    const pages = galleryContainer.querySelectorAll('.page');
+
+    pages[1].style.transform = 'translateX(calc(-150% - 20px)) rotateY(90deg)';
+    pages[1].style.opacity = '0';
+    pages[0].style.transform = 'translateX(-50%) rotateY(0deg)';
+    pages[0].style.opacity = '1';
+
+    setTimeout(() => {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      renderPages();
+      isAnimating = false;
+    }, 800);
+  }
+
+  // Ok tuşları ile kontrol
+  document.addEventListener('keydown', e => {
+    if(galleryContainer.style.display === 'block' && !isAnimating) {
+      if(e.key === 'ArrowRight' || e.key === 'PageDown') {
+        goNext();
+      } else if(e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        goPrev();
+      }
+    }
+  });
+
+  // Butonlar
+  document.querySelector('.nav-next').addEventListener('click', () => {
+    if(!isAnimating) goNext();
+  });
+  document.querySelector('.nav-prev').addEventListener('click', () => {
+    if(!isAnimating) goPrev();
+  });
+
+  // Başlangıç işlemleri
   function showEnvelope() {
     startMessage.style.display = 'none';
     envelope.style.display = 'block';
@@ -134,7 +284,8 @@
 
     setTimeout(() => {
       envelope.style.display = 'none';
-      gallery.style.display = 'block';
+      galleryContainer.style.display = 'block';
+      renderPages();
     }, 1000);
   });
 
