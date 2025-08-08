@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mektup</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
@@ -28,6 +28,7 @@
         margin-bottom: 40px;
         font-weight: bold;
         letter-spacing: 2px;
+        user-select: none;
     }
     .envelope {
         width: 220px;
@@ -38,6 +39,7 @@
         opacity: 0;
         transform: scale(0.9);
         transition: opacity 1s ease, transform 0.8s ease;
+        user-select: none;
     }
     .envelope.show {
         opacity: 1;
@@ -74,22 +76,29 @@
         max-width: 800px;
         height: 80%;
         overflow: hidden;
+        user-select: none;
     }
     .gallery img {
         position: absolute;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        top: 50%;
+        left: 50%;
+        max-height: 100%;
+        max-width: calc(100% - 60px); /* yanlarda 30px boşluk bırakır */
+        transform: translate(-50%, -50%) rotateY(90deg);
         border-radius: 15px;
         box-shadow: 0 8px 20px rgba(0,0,0,0.25);
         opacity: 0;
-        transform: rotateY(90deg);
+        object-fit: contain;
         transition: transform 0.6s ease, opacity 0.6s ease;
+        will-change: transform, opacity;
+        user-select: none;
+        pointer-events: none;
     }
     .gallery img.active {
         opacity: 1;
-        transform: rotateY(0deg);
+        transform: translate(-50%, -50%) rotateY(0deg);
         z-index: 1;
+        pointer-events: auto;
     }
     .gallery .nav {
         position: absolute;
@@ -102,6 +111,11 @@
         cursor: pointer;
         user-select: none;
         transition: background 0.3s ease;
+        z-index: 10;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .gallery .nav:hover {
         background: rgba(255,255,255,0.9);
@@ -118,22 +132,24 @@
 
 <div id="countdown" class="countdown"></div>
 
-<div id="envelope" class="envelope">
+<div id="envelope" class="envelope" aria-label="Mektup zarfı" role="button" tabindex="0">
     <div class="envelope-flap"></div>
     <div class="envelope-body"></div>
 </div>
 
-<div id="gallery" class="gallery">
-    <div class="nav prev">&#10094;</div>
-    <div class="nav next">&#10095;</div>
-    <img src="foto1.jpg" class="active" alt="">
-    <img src="foto2.jpg" alt="">
-    <img src="foto3.jpg" alt="">
-    <img src="foto4.jpg" alt="">
-    <img src="foto5.jpg" alt="">
+<div id="gallery" class="gallery" aria-label="Fotoğraf galerisi">
+    <div class="nav prev" role="button" aria-label="Önceki sayfa" tabindex="0">&#10094;</div>
+    <div class="nav next" role="button" aria-label="Sonraki sayfa" tabindex="0">&#10095;</div>
+    <img src="foto1.jpg" class="active" alt="Fotoğraf 1" />
+    <img src="foto2.jpg" alt="Fotoğraf 2" />
+    <img src="foto3.jpg" alt="Fotoğraf 3" />
+    <img src="foto4.jpg" alt="Fotoğraf 4" />
+    <img src="foto5.jpg" alt="Fotoğraf 5" />
 </div>
 
-<audio id="envelopeSound" src="open.mp3"></audio>
+<audio id="openSound" src="open.mp3" preload="auto"></audio>
+<audio id="revealSound" src="reveal.mp3" preload="auto"></audio>
+<audio id="tickTockSound" src="tick-tock.mp3" preload="auto"></audio>
 
 <script>
     const targetDate = new Date();
@@ -142,24 +158,42 @@
     const countdownEl = document.getElementById("countdown");
     const envelopeEl = document.getElementById("envelope");
     const galleryEl = document.getElementById("gallery");
-    const envelopeSound = document.getElementById("envelopeSound");
+
+    const openSound = document.getElementById("openSound");
+    const revealSound = document.getElementById("revealSound");
+    const tickTockSound = document.getElementById("tickTockSound");
+
     const images = document.querySelectorAll(".gallery img");
     const prevBtn = document.querySelector(".gallery .prev");
     const nextBtn = document.querySelector(".gallery .next");
+
     let currentIndex = 0;
+    let tickTockInterval = null;
 
     envelopeEl.style.display = "none";
 
+    // Geri sayım ve tick-tock sesi (2 saniyede bir)
     const timer = setInterval(() => {
         const now = new Date().getTime();
         const distance = targetDate - now;
 
         if (distance <= 0) {
             clearInterval(timer);
+            if (tickTockInterval) clearInterval(tickTockInterval);
             countdownEl.style.display = "none";
             envelopeEl.style.display = "block";
-            setTimeout(() => envelopeEl.classList.add("show"), 50);
+            setTimeout(() => {
+                envelopeEl.classList.add("show");
+                revealSound.play();
+            }, 50);
             return;
+        }
+
+        if (!tickTockInterval) {
+            tickTockInterval = setInterval(() => {
+                tickTockSound.currentTime = 0;
+                tickTockSound.play();
+            }, 2000);
         }
 
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -167,41 +201,73 @@
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        countdownEl.innerHTML =
+        countdownEl.textContent =
             `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, 1000);
 
+    // Zarf tıklanınca açılır, open.mp3 çalar
     envelopeEl.addEventListener("click", () => {
-        envelopeSound.play();
+        openSound.currentTime = 0;
+        openSound.play();
         envelopeEl.classList.add("open");
         setTimeout(() => {
             envelopeEl.style.display = "none";
             galleryEl.style.display = "block";
         }, 1000);
     });
+    // Aynı zamanda klavye ile de açılabilir (enter, space)
+    envelopeEl.addEventListener("keydown", e => {
+        if(e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            envelopeEl.click();
+        }
+    });
 
+    // Sayfa gösterme fonksiyonu
     function showImage(index) {
+        if(index === currentIndex) return; // Aynı sayfa ise boşu boşuna ses çalma
+
+        currentIndex = index;
+
         images.forEach((img, i) => {
             img.classList.remove("active");
             if (i === index) {
                 img.classList.add("active");
             }
         });
+
+        openSound.currentTime = 0;
+        openSound.play();
     }
 
-    prevBtn.addEventListener("click", () => {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        showImage(currentIndex);
+    // Önceki sayfa
+    prevBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        const newIndex = (currentIndex - 1 + images.length) % images.length;
+        showImage(newIndex);
     });
-
-    nextBtn.addEventListener("click", () => {
-        currentIndex = (currentIndex + 1) % images.length;
-        showImage(currentIndex);
+    // Sonraki sayfa
+    nextBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        const newIndex = (currentIndex + 1) % images.length;
+        showImage(newIndex);
     });
-
-    galleryEl.addEventListener("click", (e) => {
+    // Klavye ile sayfa değişimi (sol/sağ ok)
+    document.addEventListener("keydown", e => {
+        if(galleryEl.style.display === "block") {
+            if(e.key === "ArrowLeft") {
+                prevBtn.click();
+            } else if(e.key === "ArrowRight") {
+                nextBtn.click();
+            }
+        }
+    });
+    // Fotoğrafın sağ/soluna tıklayarak sayfa değişimi
+    galleryEl.addEventListener("click", e => {
         if (e.target === prevBtn || e.target === nextBtn) return;
-        if (e.offsetX < galleryEl.clientWidth / 2) {
+        const clickX = e.clientX;
+        const midX = window.innerWidth / 2;
+        if(clickX < midX) {
             prevBtn.click();
         } else {
             nextBtn.click();
