@@ -58,7 +58,7 @@
 
   .gallery {
     margin-top: 30px;
-    width: 90%;
+    width: 90vw;
     max-width: 700px;
     height: 400px;
     overflow-x: auto;
@@ -68,8 +68,9 @@
   }
   .gallery img {
     height: 100%;
+    width: auto;
     display: inline-block;
-    margin-right: 10px;
+    margin: 0 10px;
     border-radius: 10px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     user-select: none;
@@ -78,7 +79,7 @@
 </head>
 <body>
 
-<div id="startMessage">Ekrana tıkla!</div>
+<div id="startMessage" tabindex="0" role="button" aria-label="Başlamak için ekrana tıklayın">Ekrana tıkla!</div>
 
 <div id="envelope" class="envelope" tabindex="0" role="button" aria-label="Mektup zarfı">
   <div class="envelope-flap"></div>
@@ -109,9 +110,8 @@
     envelope.style.display = 'block';
     setTimeout(() => {
       envelope.classList.add('show');
-    }, 20); // küçük gecikmeyle fade-in
+    }, 20);
 
-    // Reveal sesi çal
     revealSound.currentTime = 0;
     revealSound.play().catch(() => {});
   }
