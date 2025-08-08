@@ -153,7 +153,7 @@
 
 <script>
     const targetDate = new Date();
-    targetDate.setHours(00, 06, 0, 0);
+    targetDate.setHours(00, 10, 0, 0);
 
     const countdownEl = document.getElementById("countdown");
     const envelopeEl = document.getElementById("envelope");
@@ -171,6 +171,7 @@
     let tickTockInterval = null;
     let tickTockStarted = false;
     let tickTockTimeout = null;
+    let revealPlayed = false;
 
     envelopeEl.style.display = "none";
 
@@ -182,10 +183,20 @@
                 tickTockSound.currentTime = 0;
                 tickTockSound.play().catch(() => {});
             }, 2000);
-        }, 1000); // 1 saniye gecikme
+        }, 1000); // 1 saniye gecikmeli başlat
     }
+
+    // Tick-tock sesini kullanıcı etkileşiminden sonra başlat
     document.body.addEventListener('click', startTickTock, { once: true });
     document.body.addEventListener('keydown', startTickTock, { once: true });
+
+    function playRevealSound() {
+        if (!revealPlayed) {
+            revealPlayed = true;
+            revealSound.currentTime = 0;
+            revealSound.play().catch(() => {});
+        }
+    }
 
     const timer = setInterval(() => {
         const now = new Date().getTime();
@@ -200,8 +211,7 @@
 
             if (!envelopeEl.classList.contains("show")) {
                 envelopeEl.classList.add("show");
-                revealSound.currentTime = 0;
-                revealSound.play();
+                playRevealSound();
             }
 
             return;
@@ -221,11 +231,8 @@
         if (new Date().getTime() >= targetDate.getTime()) {
             countdownEl.style.display = "none";
             envelopeEl.style.display = "block";
-            if (!envelopeEl.classList.contains("show")) {
-                envelopeEl.classList.add("show");
-                revealSound.currentTime = 0;
-                revealSound.play();
-            }
+            envelopeEl.classList.add("show");
+            playRevealSound();
         }
     });
 
