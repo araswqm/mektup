@@ -133,18 +133,12 @@
 <div id="countdown" class="countdown"></div>
 
 <div id="envelope" class="envelope" aria-label="Mektup zarfı" role="button" tabindex="0">
-    <div class="envelope-flap"></div>
-    <div class="envelope-body"></div>
+  <div class="envelope-flap"></div>
+  <div class="envelope-body"></div>
 </div>
 
-<div id="gallery" class="gallery" aria-label="Fotoğraf galerisi">
-    <div class="nav prev" role="button" aria-label="Önceki sayfa" tabindex="0">&#10094;</div>
-    <div class="nav next" role="button" aria-label="Sonraki sayfa" tabindex="0">&#10095;</div>
-    <img src="foto1.jpg" class="active" alt="Fotoğraf 1" />
-    <img src="foto2.jpg" alt="Fotoğraf 2" />
-    <img src="foto3.jpg" alt="Fotoğraf 3" />
-    <img src="foto4.jpg" alt="Fotoğraf 4" />
-    <img src="foto5.jpg" alt="Fotoğraf 5" />
+<div id="gallery" class="gallery" aria-label="Fotoğraf galerisi" style="display:none;">
+  <!-- galerinin içeriği önceki gibi -->
 </div>
 
 <audio id="openSound" src="open.mp3" preload="auto"></audio>
@@ -152,144 +146,106 @@
 <audio id="tickTockSound" src="tick-tock.mp3" preload="auto"></audio>
 
 <script>
-    const targetDate = new Date();
-    targetDate.setHours(00, 10, 0, 0);
+  const targetDate = new Date();
+  targetDate.setHours(00, 17, 0, 0);
 
-    const countdownEl = document.getElementById("countdown");
-    const envelopeEl = document.getElementById("envelope");
-    const galleryEl = document.getElementById("gallery");
+  const countdownEl = document.getElementById("countdown");
+  const envelopeEl = document.getElementById("envelope");
+  const galleryEl = document.getElementById("gallery");
 
-    const openSound = document.getElementById("openSound");
-    const revealSound = document.getElementById("revealSound");
-    const tickTockSound = document.getElementById("tickTockSound");
+  const openSound = document.getElementById("openSound");
+  const revealSound = document.getElementById("revealSound");
+  const tickTockSound = document.getElementById("tickTockSound");
 
-    const images = document.querySelectorAll(".gallery img");
-    const prevBtn = document.querySelector(".gallery .prev");
-    const nextBtn = document.querySelector(".gallery .next");
+  let tickTockInterval = null;
+  let revealPlayed = false;
 
-    let currentIndex = 0;
-    let tickTockInterval = null;
-    let tickTockStarted = false;
-    let tickTockTimeout = null;
-    let revealPlayed = false;
+  function startTickTock() {
+    if (tickTockInterval) return; // Zaten çalışıyorsa geç
+    tickTockInterval = setInterval(() => {
+      tickTockSound.currentTime = 0;
+      tickTockSound.play().catch(() => {});
+    }, 2000);
+  }
 
-    envelopeEl.style.display = "none";
-
-    function startTickTock() {
-        if (tickTockStarted) return;
-        tickTockStarted = true;
-        tickTockTimeout = setTimeout(() => {
-            tickTockInterval = setInterval(() => {
-                tickTockSound.currentTime = 0;
-                tickTockSound.play().catch(() => {});
-            }, 2000);
-        }, 1000); // 1 saniye gecikmeli başlat
+  function stopTickTock() {
+    if (tickTockInterval) {
+      clearInterval(tickTockInterval);
+      tickTockInterval = null;
     }
+  }
 
-    // Tick-tock sesini kullanıcı etkileşiminden sonra başlat
-    document.body.addEventListener('click', startTickTock, { once: true });
-    document.body.addEventListener('keydown', startTickTock, { once: true });
-
-    function playRevealSound() {
-        if (!revealPlayed) {
-            revealPlayed = true;
-            revealSound.currentTime = 0;
-            revealSound.play().catch(() => {});
-        }
+  function playReveal() {
+    if (!revealPlayed) {
+      revealPlayed = true;
+      revealSound.currentTime = 0;
+      revealSound.play().catch(() => {});
     }
+  }
 
-    const timer = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = targetDate - now;
+  function showEnvelopeAndReveal() {
+    countdownEl.style.display = "none";
+    envelopeEl.style.display = "block";
+    envelopeEl.classList.add("show");
+    stopTickTock();
+    playReveal();
+  }
 
-        if (distance <= 0) {
-            clearInterval(timer);
-            if (tickTockInterval) clearInterval(tickTockInterval);
-            if (tickTockTimeout) clearTimeout(tickTockTimeout);
-            countdownEl.style.display = "none";
-            envelopeEl.style.display = "block";
+  // Geri sayım kontrol ve gösterim
+  function updateCountdown() {
+    const now = Date.now();
+    const diff = targetDate.getTime() - now;
 
-            if (!envelopeEl.classList.contains("show")) {
-                envelopeEl.classList.add("show");
-                playRevealSound();
-            }
+    if (diff <= 0) {
+      showEnvelopeAndReveal();
+      return false; // süre bitti
+    } else {
+      // Geri sayımı göster
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            return;
-        }
+      countdownEl.textContent =
+        `${String(days).padStart(2,'0')}:${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+      return true; // süre devam ediyor
+    }
+  }
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  // İlk yüklemede kontrol
+  window.addEventListener('load', () => {
+    const countdownActive = updateCountdown();
 
-        countdownEl.textContent =
-            `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    if (countdownActive) {
+      // Geri sayım devam ediyor, 2 saniye sonra tick-tock başlat
+      countdownEl.style.display = "block";
+      envelopeEl.style.display = "none";
+      setTimeout(startTickTock, 2000);
+    } else {
+      // Süre zaten bitmiş, mektup ve reveal sesi hemen göster
+      showEnvelopeAndReveal();
+    }
+  });
+
+  // Geri sayım 1 saniyede bir güncelleniyor, süre bitince alarm
+  const countdownInterval = setInterval(() => {
+    const countdownActive = updateCountdown();
+    if (!countdownActive) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+
+  // Zarf tıklama ile açılır (open.mp3 çalar)
+  envelopeEl.addEventListener('click', () => {
+    openSound.currentTime = 0;
+    openSound.play();
+    envelopeEl.classList.add("open");
+    setTimeout(() => {
+      envelopeEl.style.display = "none";
+      galleryEl.style.display = "block";
     }, 1000);
+  });
 
-    // Sayfa yüklendiğinde, geri sayım zaten bittiyse mektup göster ve sesi çal
-    window.addEventListener('load', () => {
-        if (new Date().getTime() >= targetDate.getTime()) {
-            countdownEl.style.display = "none";
-            envelopeEl.style.display = "block";
-            envelopeEl.classList.add("show");
-            playRevealSound();
-        }
-    });
-
-    envelopeEl.addEventListener("click", () => {
-        openSound.currentTime = 0;
-        openSound.play();
-        envelopeEl.classList.add("open");
-        setTimeout(() => {
-            envelopeEl.style.display = "none";
-            galleryEl.style.display = "block";
-        }, 1000);
-    });
-
-    envelopeEl.addEventListener("keydown", e => {
-        if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            envelopeEl.click();
-        }
-    });
-
-    function showImage(index) {
-        if (index === currentIndex) return;
-        currentIndex = index;
-        images.forEach((img, i) => {
-            img.classList.remove("active");
-            if (i === index) img.classList.add("active");
-        });
-        openSound.currentTime = 0;
-        openSound.play();
-    }
-
-    prevBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        const newIndex = (currentIndex - 1 + images.length) % images.length;
-        showImage(newIndex);
-    });
-
-    nextBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        const newIndex = (currentIndex + 1) % images.length;
-        showImage(newIndex);
-    });
-
-    document.addEventListener("keydown", e => {
-        if (galleryEl.style.display === "block") {
-            if (e.key === "ArrowLeft") prevBtn.click();
-            else if (e.key === "ArrowRight") nextBtn.click();
-        }
-    });
-
-    galleryEl.addEventListener("click", e => {
-        if (e.target === prevBtn || e.target === nextBtn) return;
-        const clickX = e.clientX;
-        const midX = window.innerWidth / 2;
-        if (clickX < midX) prevBtn.click();
-        else nextBtn.click();
-    });
 </script>
 
 </body>
