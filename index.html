@@ -153,7 +153,7 @@
 
 <script>
     const targetDate = new Date();
-    targetDate.setHours(23, 56, 0, 0);
+    targetDate.setHours(23, 24, 0, 0);
 
     const countdownEl = document.getElementById("countdown");
     const envelopeEl = document.getElementById("envelope");
@@ -170,20 +170,22 @@
     let currentIndex = 0;
     let tickTockInterval = null;
     let tickTockStarted = false;
+    let tickTockTimeout = null;
 
     envelopeEl.style.display = "none";
 
-    // Kullanıcı ilk tıklama veya tuşa basma ile tick-tock başlar
     function startTickTock() {
-        if(tickTockStarted) return;
+        if (tickTockStarted) return;
         tickTockStarted = true;
-        tickTockInterval = setInterval(() => {
-            tickTockSound.currentTime = 0;
-            tickTockSound.play().catch(() => {});
-        }, 2000);
+        tickTockTimeout = setTimeout(() => {
+            tickTockInterval = setInterval(() => {
+                tickTockSound.currentTime = 0;
+                tickTockSound.play().catch(() => {});
+            }, 2000);
+        }, 1000); // 1 saniye gecikme
     }
-    document.body.addEventListener('click', startTickTock, {once: true});
-    document.body.addEventListener('keydown', startTickTock, {once: true});
+    document.body.addEventListener('click', startTickTock, { once: true });
+    document.body.addEventListener('keydown', startTickTock, { once: true });
 
     const timer = setInterval(() => {
         const now = new Date().getTime();
@@ -192,13 +194,15 @@
         if (distance <= 0) {
             clearInterval(timer);
             if (tickTockInterval) clearInterval(tickTockInterval);
+            if (tickTockTimeout) clearTimeout(tickTockTimeout);
             countdownEl.style.display = "none";
             envelopeEl.style.display = "block";
 
-            // reveal.mp3 sesini fade-in (show) class'ı eklendiğinde çal
-            envelopeEl.classList.add("show");
-            revealSound.currentTime = 0;
-            revealSound.play();
+            if (!envelopeEl.classList.contains("show")) {
+                envelopeEl.classList.add("show");
+                revealSound.currentTime = 0;
+                revealSound.play();
+            }
 
             return;
         }
@@ -212,6 +216,19 @@
             `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, 1000);
 
+    // Sayfa yüklendiğinde, geri sayım zaten bittiyse mektup göster ve sesi çal
+    window.addEventListener('load', () => {
+        if (new Date().getTime() >= targetDate.getTime()) {
+            countdownEl.style.display = "none";
+            envelopeEl.style.display = "block";
+            if (!envelopeEl.classList.contains("show")) {
+                envelopeEl.classList.add("show");
+                revealSound.currentTime = 0;
+                revealSound.play();
+            }
+        }
+    });
+
     envelopeEl.addEventListener("click", () => {
         openSound.currentTime = 0;
         openSound.play();
@@ -223,18 +240,18 @@
     });
 
     envelopeEl.addEventListener("keydown", e => {
-        if(e.key === "Enter" || e.key === " ") {
+        if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             envelopeEl.click();
         }
     });
 
     function showImage(index) {
-        if(index === currentIndex) return;
+        if (index === currentIndex) return;
         currentIndex = index;
         images.forEach((img, i) => {
             img.classList.remove("active");
-            if(i === index) img.classList.add("active");
+            if (i === index) img.classList.add("active");
         });
         openSound.currentTime = 0;
         openSound.play();
@@ -253,17 +270,17 @@
     });
 
     document.addEventListener("keydown", e => {
-        if(galleryEl.style.display === "block") {
-            if(e.key === "ArrowLeft") prevBtn.click();
-            else if(e.key === "ArrowRight") nextBtn.click();
+        if (galleryEl.style.display === "block") {
+            if (e.key === "ArrowLeft") prevBtn.click();
+            else if (e.key === "ArrowRight") nextBtn.click();
         }
     });
 
     galleryEl.addEventListener("click", e => {
-        if(e.target === prevBtn || e.target === nextBtn) return;
+        if (e.target === prevBtn || e.target === nextBtn) return;
         const clickX = e.clientX;
         const midX = window.innerWidth / 2;
-        if(clickX < midX) prevBtn.click();
+        if (clickX < midX) prevBtn.click();
         else nextBtn.click();
     });
 </script>
