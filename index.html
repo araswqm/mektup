@@ -88,6 +88,11 @@
     border-radius: 0;
     object-fit: contain;
     user-select: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transition: transform 0.4s ease;
+  }
+  .page img:hover {
+    transform: scale(1.02);
   }
 
   .page.current {
@@ -106,32 +111,36 @@
     transform: translate(calc(-150% - 50px), -50%) rotateY(90deg);
   }
 
-  /* Ok butonları fotoğrafın içinde yanlarda - sade ve küçük */
+  /* Iced Glass ok butonları */
   .nav-button {
     position: absolute;
     top: 50%;
-    font-size: 4rem;
-    color: rgba(0,0,0,0.6);
+    font-size: 3rem;
+    color: rgba(255,255,255,0.8);
     cursor: pointer;
     user-select: none;
     transform: translateY(-50%);
     z-index: 10;
-    background: none;
-    border: none;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.3s ease;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 14px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
   }
   .nav-button:hover {
-    color: rgba(0,0,0,0.9);
+    color: rgba(255,255,255,1);
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-50%) scale(1.05);
   }
   .nav-prev {
-    left: 10px;
+    left: 15px;
   }
   .nav-next {
-    right: 10px;
+    right: 15px;
   }
-
 </style>
 </head>
 <body>
@@ -144,7 +153,6 @@
 </div>
 
 <div class="gallery-container" aria-label="Fotoğraf galerisi">
-  <!-- Sayfalar JS ile buraya eklenecek -->
   <button class="nav-button nav-prev" tabindex="0" aria-label="Önceki sayfa">‹</button>
   <button class="nav-button nav-next" tabindex="0" aria-label="Sonraki sayfa">›</button>
 </div>
@@ -166,7 +174,7 @@
     "foto4.jpg",
     "foto5.jpg",
     "foto6.jpg",
-    "foto7.jpg", 
+    "foto7.jpg",
     "foto8.jpg",
     "foto9.jpg"
   ];
@@ -233,7 +241,6 @@
     }, 800);
   }
 
-  // Klavye ok tuşları ile kontrol
   document.addEventListener('keydown', e => {
     if(galleryContainer.style.display === 'block' && !isAnimating) {
       if(e.key === 'ArrowRight' || e.key === 'PageDown') {
@@ -244,7 +251,6 @@
     }
   });
 
-  // Butonlar
   document.querySelector('.nav-next').addEventListener('click', () => {
     if(!isAnimating) goNext();
   });
@@ -252,7 +258,6 @@
     if(!isAnimating) goPrev();
   });
 
-  // Başlangıç işlemleri
   function showEnvelope() {
     startMessage.style.display = 'none';
     envelope.style.display = 'block';
